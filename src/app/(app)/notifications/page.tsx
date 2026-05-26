@@ -22,7 +22,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Bell, AlertCircle, CheckCircle, Info,
-  Plus, User, Calendar, Loader2,
+  Plus, User, Calendar, Loader2, Pencil,
 } from 'lucide-react';
 import { NotificationWithAuthor } from '@/types/database';
 import { toast } from 'sonner';
@@ -51,6 +51,7 @@ export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<NotificationWithAuthor[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingNotification, setEditingNotification] = useState<NotificationWithAuthor | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [formTitle, setFormTitle] = useState('');
   const [formMessage, setFormMessage] = useState('');
@@ -70,33 +71,77 @@ export default function NotificationsPage() {
     setLoading(false);
   }
 
-  async function handleCreate() {
+  function openCreateDialog() {
+    setEditingNotification(null);
+    setFormTitle('');
+    setFormMessage('');
+    setFormType('default');
+    setDialogOpen(true);
+  }
+
+  function openEditDialog(notification: NotificationWithAuthor) {
+    setEditingNotification(notification);
+    setFormTitle(notification.title);
+    setFormMessage(notification.message ?? '');
+    setFormType(notification.type);
+    setDialogOpen(true);
+  }
+
+  function closeDialog() {
+    setDialogOpen(false);
+    setEditingNotification(null);
+    setFormTitle('');
+    setFormMessage('');
+    setFormType('default');
+  }
+
+  async function handleSubmit() {
     if (!formTitle.trim()) {
       toast.error('O título é obrigatório');
       return;
     }
     setSubmitting(true);
-    const { error } = await supabase.from('notifications').insert({
+
+    const payload = {
       title: formTitle.trim(),
       message: formMessage.trim() || null,
       type: formType,
-      author_id: user?.id,
-      user_id: user?.id,
-      is_read: false,
-      sent_email: false,
-    });
-    setSubmitting(false);
+    };
 
-    if (error) {
-      toast.error('Erro ao criar notificação', { description: error.message });
-      return;
+    if (editingNotification) {
+      const { error } = await supabase
+        .from('notifications')
+        .update(payload)
+        .eq('id', editingNotification.id);
+
+      setSubmitting(false);
+
+      if (error) {
+        toast.error('Erro ao atualizar notificação', { description: error.message });
+        return;
+      }
+
+      toast.success('Notificação atualizada com sucesso');
+    } else {
+      const { error } = await supabase.from('notifications').insert({
+        ...payload,
+        author_id: user?.id,
+        user_id: user?.id,
+        is_read: false,
+        sent_email: false,
+      });
+
+      setSubmitting(false);
+
+      if (error) {
+        toast.error('Erro ao criar notificação', { description: error.message });
+        return;
+      }
+
+      toast.success('Notificação criada com sucesso');
     }
 
-    toast.success('Notificação criada com sucesso');
-    setDialogOpen(false);
-    setFormTitle('');
-    setFormMessage('');
-    setFormType('default');
+    closeDialog();
     loadNotifications();
   }
 
@@ -126,16 +171,18 @@ export default function NotificationsPage() {
             {notifications.length} {notifications.length === 1 ? 'notificação' : 'notificações'}
           </p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger render={<Button />}>
+        <Dialog open={dialogOpen} onOpenChange={(open) => { if (!open) closeDialog(); }}>
+          <DialogTrigger render={<Button onClick={openCreateDialog} />}>
             <Plus className="mr-2 h-4 w-4" />
             Nova Notificação
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Nova Notificação</DialogTitle>
+              <DialogTitle>{editingNotification ? 'Editar Notificação' : 'Nova Notificação'}</DialogTitle>
               <DialogDescription>
-                Crie uma notificação para todos os usuários do sistema.
+                {editingNotification
+                  ? 'Altere os campos da notificação já publicada.'
+                  : 'Crie uma notificação para todos os usuários do sistema.'}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
@@ -173,16 +220,16 @@ export default function NotificationsPage() {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setDialogOpen(false)}>
+              <Button variant="outline" onClick={closeDialog}>
                 Cancelar
               </Button>
-              <Button onClick={handleCreate} disabled={submitting}>
+              <Button onClick={handleSubmit} disabled={submitting}>
                 {submitting ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
                   <Bell className="mr-2 h-4 w-4" />
                 )}
-                Publicar
+                {editingNotification ? 'Salvar' : 'Publicar'}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -225,9 +272,19 @@ export default function NotificationsPage() {
                             </p>
                           )}
                         </div>
-                        <Badge variant="outline" className="shrink-0">
-                          {TYPE_LABELS[n.type] || 'Geral'}
-                        </Badge>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openEditDialog(n)}
+                          >
+                            <Pencil className="mr-1 h-3.5 w-3.5" />
+                            Editar
+                          </Button>
+                          <Badge variant="outline">
+                            {TYPE_LABELS[n.type] || 'Geral'}
+                          </Badge>
+                        </div>
                       </div>
                       <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                         {n.author && (
