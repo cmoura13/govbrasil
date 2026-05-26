@@ -147,16 +147,24 @@ export default function NotificationsPage() {
         return;
       }
 
-      if (insertData && insertData[0]) {
-        const created = insertData[0];
-        setNotifications((prev) => [
-          {
-            ...created,
-            author: user ? { full_name: user.full_name, email: user.email } : undefined,
-          },
-          ...prev,
-        ]);
-      }
+      const created = insertData?.[0];
+      setNotifications((prev) => [
+        {
+          id: created?.id ?? `temp_${Date.now()}`,
+          title: payload.title,
+          message: payload.message,
+          type: payload.type,
+          user_id: user?.id ?? '',
+          author_id: user?.id ?? '',
+          related_task_id: null,
+          related_project_id: null,
+          is_read: false,
+          sent_email: false,
+          created_at: created?.created_at ?? new Date().toISOString(),
+          author: user ?? undefined,
+        } as NotificationWithAuthor,
+        ...prev,
+      ]);
 
       toast.success('Notificação criada com sucesso');
     }
