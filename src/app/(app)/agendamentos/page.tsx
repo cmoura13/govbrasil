@@ -40,12 +40,17 @@ export default function AgendamentosPage() {
 
   async function loadAgendamentos() {
     setLoading(true);
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('agendamentos')
       .select('*')
       .is('deleted_at', null)
       .order('scheduled_date', { ascending: false });
-    if (data) setAgendamentos(data as Agendamento[]);
+    if (error) {
+      console.error('Erro ao carregar agendamentos:', error.message);
+      toast.error('Erro ao carregar agendamentos');
+    } else if (data) {
+      setAgendamentos(data as Agendamento[]);
+    }
     setLoading(false);
   }
 
@@ -95,21 +100,15 @@ export default function AgendamentosPage() {
         return;
       }
 
-      setAgendamentos((prev) =>
-        prev.map((a) =>
-          a.id === editingItem.id ? { ...a, ...payload } : a
-        )
-      );
-
       toast.success('Agendamento atualizado com sucesso');
+      loadAgendamentos();
     } else {
-      const { error, data: insertData } = await supabase
+      const { error } = await supabase
         .from('agendamentos')
         .insert({
           ...payload,
           created_by: user?.id,
-        })
-        .select('*');
+        });
 
       setSubmitting(false);
 
@@ -118,10 +117,8 @@ export default function AgendamentosPage() {
         return;
       }
 
-      const created = insertData?.[0];
-      setAgendamentos((prev) => [created as Agendamento, ...prev]);
-
       toast.success('Agendamento criado com sucesso');
+      loadAgendamentos();
     }
 
     closeDialog();

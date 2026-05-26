@@ -13,11 +13,13 @@ CREATE INDEX IF NOT EXISTS idx_agendamentos_scheduled_date ON agendamentos(sched
 
 ALTER TABLE agendamentos ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "agendamentos_read" ON agendamentos;
+DROP POLICY IF EXISTS "agendamentos_insert" ON agendamentos;
+DROP POLICY IF EXISTS "agendamentos_update" ON agendamentos;
+DROP POLICY IF EXISTS "agendamentos_delete" ON agendamentos;
+
 CREATE POLICY "agendamentos_read" ON agendamentos FOR SELECT TO authenticated
-  USING (
-    public.get_user_role() = 'super_admin'
-    OR created_by = (SELECT id FROM public.users WHERE auth_user_id = auth.uid() LIMIT 1)
-  );
+  USING (true);
 
 CREATE POLICY "agendamentos_insert" ON agendamentos FOR INSERT TO authenticated
   WITH CHECK (created_by = (SELECT id FROM public.users WHERE auth_user_id = auth.uid() LIMIT 1));
@@ -26,7 +28,4 @@ CREATE POLICY "agendamentos_update" ON agendamentos FOR UPDATE TO authenticated
   USING (created_by = (SELECT id FROM public.users WHERE auth_user_id = auth.uid() LIMIT 1));
 
 CREATE POLICY "agendamentos_delete" ON agendamentos FOR DELETE TO authenticated
-  USING (
-    public.get_user_role() = 'super_admin'
-    OR created_by = (SELECT id FROM public.users WHERE auth_user_id = auth.uid() LIMIT 1)
-  );
+  USING (created_by = (SELECT id FROM public.users WHERE auth_user_id = auth.uid() LIMIT 1));
