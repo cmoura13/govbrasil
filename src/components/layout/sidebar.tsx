@@ -5,11 +5,9 @@ import { usePathname } from 'next/navigation';
 import {
   FolderKanban,
   CheckSquare,
-  KanbanSquare,
   BarChart3,
   Users,
   Settings,
-  Bell,
   BookOpen,
   ChevronLeft,
   Building2,
@@ -23,14 +21,12 @@ import { useAuth } from '@/contexts/auth-context';
 const menuItems = [
   { href: '/projects', label: 'Projetos', icon: FolderKanban },
   { href: '/tasks', label: 'Tarefas', icon: CheckSquare },
-  { href: '/kanban', label: 'Kanban', icon: KanbanSquare },
   { href: '/reports', label: 'Relatórios', icon: BarChart3 },
   { href: '/repositorio', label: 'Repositório', icon: BookOpen },
 ];
 
 const bottomItems = [
   { href: '/users', label: 'Usuários', icon: Users, adminOnly: true },
-  { href: '/notifications', label: 'Notificações', icon: Bell },
   { href: '/settings', label: 'Configurações', icon: Settings },
 ];
 

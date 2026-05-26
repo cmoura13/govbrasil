@@ -1,6 +1,6 @@
 'use client';
 
-import { Menu, Bell, Moon, Sun, LogOut } from 'lucide-react';
+import { Menu, Moon, Sun, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/contexts/theme-context';
 import { useAuth } from '@/contexts/auth-context';
@@ -50,10 +50,6 @@ export function Navbar({ onMenuClick }: NavbarProps) {
         ) : (
           <Moon className="h-5 w-5" />
         )}
-      </Button>
-
-      <Button variant="ghost" size="icon" className="rounded-lg" onClick={() => router.push('/notifications')} title="Notificações">
-        <Bell className="h-5 w-5" />
       </Button>
 
       <Button variant="ghost" className="rounded-lg gap-2" onClick={handleSignOut}>

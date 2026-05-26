@@ -56,7 +56,7 @@ export function HelpDialog() {
                     <li>Crie usuários no menu <strong>Usuários</strong> (apenas Administradores)</li>
                     <li>Crie projetos no menu <strong>Projetos</strong></li>
                     <li>Crie tarefas vinculadas aos projetos no menu <strong>Tarefas</strong></li>
-                    <li>Acompanhe o progresso pelo <strong>Kanban</strong> ou <strong>Relatórios</strong></li>
+                    <li>Acompanhe o progresso pelos <strong>Relatórios</strong></li>
                   </ol>
                 </div>
               </TabsContent>
@@ -84,13 +84,6 @@ export function HelpDialog() {
                   <p className="text-sm text-muted-foreground">
                     Crie e gerencie tarefas com executor, prioridade, status, anexos, 
                     comentários e timeline de atividades.
-                  </p>
-                </div>
-                <div>
-                  <h3 className="text-base font-bold mb-2">Kanban</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Visualização estilo Kanban com arrastar e soltar entre colunas: 
-                    Pendente, Em Execução, Validação e Concluído.
                   </p>
                 </div>
                 <div>
