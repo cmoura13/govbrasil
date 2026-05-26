@@ -109,11 +109,10 @@ export default function NotificationsPage() {
     };
 
     if (editingNotification) {
-      const { error: updateError, data: updateData } = await supabase
+      const { error: updateError } = await supabase
         .from('notifications')
         .update(payload)
-        .eq('id', editingNotification.id)
-        .select('*, author:users!author_id(full_name, email)');
+        .eq('id', editingNotification.id);
 
       setSubmitting(false);
 
@@ -122,14 +121,10 @@ export default function NotificationsPage() {
         return;
       }
 
-      if (!updateData || updateData.length === 0) {
-        toast.error('Erro ao atualizar notificação', { description: 'Nenhuma linha foi atualizada. Verifique se você tem permissão para editar esta notificação.' });
-        return;
-      }
-
-      const updated = updateData[0];
       setNotifications((prev) =>
-        prev.map((n) => (n.id === updated.id ? { ...n, ...updated } : n)),
+        prev.map((n) =>
+          n.id === editingNotification.id ? { ...n, ...payload } : n,
+        ),
       );
 
       toast.success('Notificação atualizada com sucesso');
@@ -143,7 +138,7 @@ export default function NotificationsPage() {
           is_read: false,
           sent_email: false,
         })
-        .select('*, author:users!author_id(full_name, email)');
+        .select('*');
 
       setSubmitting(false);
 
@@ -152,8 +147,15 @@ export default function NotificationsPage() {
         return;
       }
 
-      if (insertData) {
-        setNotifications((prev) => [...insertData, ...prev]);
+      if (insertData && insertData[0]) {
+        const created = insertData[0];
+        setNotifications((prev) => [
+          {
+            ...created,
+            author: user ? { full_name: user.full_name, email: user.email } : undefined,
+          },
+          ...prev,
+        ]);
       }
 
       toast.success('Notificação criada com sucesso');
