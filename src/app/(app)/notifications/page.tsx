@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -109,40 +109,57 @@ export default function NotificationsPage() {
     };
 
     if (editingNotification) {
-      const { error } = await supabase
+      const { error: updateError, data: updateData } = await supabase
         .from('notifications')
         .update(payload)
-        .eq('id', editingNotification.id);
+        .eq('id', editingNotification.id)
+        .select('*, author:users!author_id(full_name, email)');
 
       setSubmitting(false);
 
-      if (error) {
-        toast.error('Erro ao atualizar notificação', { description: error.message });
+      if (updateError) {
+        toast.error('Erro ao atualizar notificação', { description: updateError.message });
         return;
       }
 
+      if (!updateData || updateData.length === 0) {
+        toast.error('Erro ao atualizar notificação', { description: 'Nenhuma linha foi atualizada. Verifique se você tem permissão para editar esta notificação.' });
+        return;
+      }
+
+      const updated = updateData[0];
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === updated.id ? { ...n, ...updated } : n)),
+      );
+
       toast.success('Notificação atualizada com sucesso');
     } else {
-      const { error } = await supabase.from('notifications').insert({
-        ...payload,
-        author_id: user?.id,
-        user_id: user?.id,
-        is_read: false,
-        sent_email: false,
-      });
+      const { error: insertError, data: insertData } = await supabase
+        .from('notifications')
+        .insert({
+          ...payload,
+          author_id: user?.id,
+          user_id: user?.id,
+          is_read: false,
+          sent_email: false,
+        })
+        .select('*, author:users!author_id(full_name, email)');
 
       setSubmitting(false);
 
-      if (error) {
-        toast.error('Erro ao criar notificação', { description: error.message });
+      if (insertError) {
+        toast.error('Erro ao criar notificação', { description: insertError.message });
         return;
+      }
+
+      if (insertData) {
+        setNotifications((prev) => [...insertData, ...prev]);
       }
 
       toast.success('Notificação criada com sucesso');
     }
 
     closeDialog();
-    loadNotifications();
   }
 
   if (loading) {
