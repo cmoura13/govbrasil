@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import {
   FolderKanban,
   CheckSquare,
+  CalendarDays,
   BarChart3,
   Users,
   Settings,
@@ -21,6 +22,7 @@ import { useAuth } from '@/contexts/auth-context';
 const menuItems = [
   { href: '/projects', label: 'Projetos', icon: FolderKanban },
   { href: '/tasks', label: 'Tarefas', icon: CheckSquare },
+  { href: '/agendamentos', label: 'Agendamentos', icon: CalendarDays },
   { href: '/reports', label: 'Relatórios', icon: BarChart3 },
   { href: '/repositorio', label: 'Repositório', icon: BookOpen },
 ];

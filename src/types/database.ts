@@ -126,6 +126,16 @@ export interface ActivityLog {
   created_at: string;
 }
 
+export interface Agendamento {
+  id: string;
+  title: string;
+  scheduled_date: string;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
 export interface UserPermission {
   id: string;
   user_id: string;
